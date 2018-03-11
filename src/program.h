@@ -9,6 +9,9 @@
 #include <system.io.fileinfo.h>
 #include <mutex>
 
+#include "map/mapscene.h"
+#include "map/maprenderdata.h"
+
 struct app_state
 {
     bool show_texture_browser = true;
@@ -20,6 +23,27 @@ struct app_state
     bool shiftPressed = false;
     bool ctrlPressed = false;
     char search_for[45];
+    bool focusedView = false;
+    GLuint vao, vbo, shader;
+    GLuint u_tex, u_p, u_v, u_m;
+};
+
+struct doc_state
+{
+    MapScene scene;
+    MapRenderData renderData;
+};
+
+struct view_state
+{
+    glm::vec3 eye = glm::vec3(0.0f);
+
+    // For 3D views
+    float pitch = 0.0f;
+    float yaw = 0.0f;
+
+    // For 2d views
+    float zoom = 1.0f;
 };
 
 struct message_modal
@@ -39,18 +63,21 @@ private:
     std::mutex _stateMutex;
     void updateTextureBrowser();
 
-    app_state state;
+    app_state app;
+    doc_state doc;
+    view_state view;
     message_modal modal;
 
     std::mutex _statusbarMutex;
     std::string _statusMessage;
     float _statusProgress;
-    void setStatus(float state, std::string const &message);
+    void setStatus(float app, std::string const &message);
 
     void populateMapsManagerFromOptions(System::IO::FileInfo const &hl);
 
     void renderGuiMenu();
     void renderGuiAbout();
+    void renderView(glm::vec4 const & rect);
 
     bool openAsset();
     void quitApp();

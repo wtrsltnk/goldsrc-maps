@@ -1,9 +1,11 @@
 #include "program.h"
+#include "map/mapparser.h"
 
 #include <glad/glad.h>
 #include <imgui.h>
 #include <imgui_impl_glfw_gl3.h>
 #include <imgui_internal.h>
+#include <shader.h>
 
 #define SYSTEM_IO_FILEINFO_IMPLEMENTATION
 #include <system.io.fileinfo.h>
@@ -18,11 +20,29 @@
 #include <thread>
 #include <vector>
 
+static std::string mapContent = "{ \
+    \"classname\" \"worldspawn\" \
+    \"message\" \"DUST by Dave Johnston - for CounterStrike\" \
+    \"skyname\" \"des\" \
+    \"MaxRange\" \"8000\" \
+    \"classname\" \"worldspawn\" \
+    \"mapversion\" \"220\" \
+    \"wad\" \"\\program files\\valve\\half-life\\valve\\halflife.wad;\\program files\\valve\\half-life\\cstrike\\cs_dust.wad\" \
+    { \
+        ( 256 -640 -192 ) ( 0 -640 -192 ) ( 0 0 0 ) SANDROAD [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 \
+        ( 256 0 -64 ) ( 0 0 -64 ) ( 0 -640 -256 ) SANDROAD [ 1 0 0 0 ] [ 0 -1 0 0 ] 0 1 1 \
+        ( 0 -640 -256 ) ( 0 0 -64 ) ( 0 0 0 ) SANDROAD [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 \
+        ( 256 -640 -192 ) ( 256 0 0 ) ( 256 0 -64 ) SANDROAD [ 0 1 0 0 ] [ 0 0 -1 0 ] 0 1 1 \
+        ( 0 0 -64 ) ( 256 0 -64 ) ( 256 0 0 ) SANDROAD [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 \
+        ( 0 -640 -192 ) ( 256 -640 -192 ) ( 256 -640 -256 ) SANDROAD [ 1 0 0 0 ] [ 0 0 -1 0 ] 0 1 1 \
+    } \
+}";
+
 Program::Program(GLFWwindow *window)
     : _window(window), _running(true), _statusProgress(-1.0f)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
-    state.search_for[0] = '\0';
+    app.search_for[0] = '\0';
 
     glfwSetWindowUserPointer(this->_window, static_cast<void *>(this));
 }
@@ -90,18 +110,36 @@ bool Program::SetUp()
         return false;
     }
 
+    app.shader = LoadShaderProgram("mapShader");
+
+    glUseProgram(app.shader);
+
+    app.u_tex = glGetUniformLocation(app.shader, "u_tex");
+    app.u_p = glGetUniformLocation(app.shader, "u_p");
+    app.u_v = glGetUniformLocation(app.shader, "u_v");
+    app.u_m = glGetUniformLocation(app.shader, "u_m");
+
+    glUseProgram(0);
+
+    glGenVertexArrays(1, &app.vao);
+    glGenBuffers(1, &app.vbo);
+
+    auto parser = MapParser(mapContent);
+    parser.LoadScene(&(doc.scene));
+
+    view.eye = glm::vec3(-700.0f, 0.0f, 0.0f);
     return true;
 }
 
 void Program::onResize(int width, int height)
 {
-    state.width = width;
-    state.height = height;
+    app.width = width;
+    app.height = height;
 }
 
 void Program::Render()
 {
-    glViewport(0, menubarHeight, state.width, state.height - menubarHeight - statusbarHeight);
+    glViewport(0, menubarHeight, app.width, app.height - menubarHeight - statusbarHeight);
     glClearColor(114 / 255.0f, 144 / 255.0f, 154 / 255.0f, 255 / 255.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -114,13 +152,15 @@ void Program::Render()
     {
         renderGuiMenu();
 
+        renderView(glm::vec4(0.0f, 40.0f, app.width, app.height - 40.0f - 20.0f));
+
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.20f, 0.20f, 0.47f, 0.60f));
         {
             ImGui::Begin("statusbar", nullptr, ImGuiWindowFlags_NoResize |ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
             {
                 std::lock_guard<std::mutex> lock(_statusbarMutex);
-                ImGui::SetWindowPos(ImVec2(0, state.height - statusbarHeight));
-                ImGui::SetWindowSize(ImVec2(state.width, statusbarHeight));
+                ImGui::SetWindowPos(ImVec2(0, app.height - statusbarHeight));
+                ImGui::SetWindowSize(ImVec2(app.width, statusbarHeight));
 
                 ImGui::Columns(2);
                 ImGui::Text(_statusMessage.c_str());
@@ -138,18 +178,20 @@ void Program::Render()
     ImGui::PopStyleVar();
 
     ImGui::Render();
+
+    ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void Program::onKeyAction(int key, int scancode, int action, int mods)
 {
-    state.shiftPressed = (mods & GLFW_MOD_SHIFT);
-    state.ctrlPressed = (mods & GLFW_MOD_CONTROL);
+    app.shiftPressed = (mods & GLFW_MOD_SHIFT);
+    app.ctrlPressed = (mods & GLFW_MOD_CONTROL);
 }
 
 void Program::onMouseMove(int x, int y)
 {
-    state.mousex = x;
-    state.mousey = y;
+    app.mousex = x;
+    app.mousey = y;
 }
 
 void Program::onMouseButton(int button, int action, int mods)
@@ -158,10 +200,10 @@ void Program::onMouseButton(int button, int action, int mods)
 
 void Program::onScroll(int x, int y)
 {
-    if (state.shiftPressed)
+    if (app.shiftPressed)
     {
     }
-    else if (state.ctrlPressed)
+    else if (app.ctrlPressed)
     {
     }
     else
@@ -173,7 +215,7 @@ void Program::CleanUp() {}
 
 void Program::KeyActionCallback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
+    ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 
     auto app = static_cast<Program *>(glfwGetWindowUserPointer(window));
 
@@ -191,7 +233,7 @@ void Program::CursorPosCallback(GLFWwindow *window, double x, double y)
 
 void Program::ScrollCallback(GLFWwindow *window, double x, double y)
 {
-    ImGui_ImplGlfwGL3_ScrollCallback(window, x, y);
+    ImGui_ImplGlfw_ScrollCallback(window, x, y);
 
     auto app = static_cast<Program *>(glfwGetWindowUserPointer(window));
 
@@ -201,7 +243,7 @@ void Program::ScrollCallback(GLFWwindow *window, double x, double y)
 
 void Program::MouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 {
-    ImGui_ImplGlfwGL3_MouseButtonCallback(window, button, action, mods);
+    ImGui_ImplGlfw_MouseButtonCallback(window, button, action, mods);
 
     auto app = static_cast<Program *>(glfwGetWindowUserPointer(window));
 

@@ -26,12 +26,18 @@ void Program::renderGuiMenu()
                     }
                 }
                 ImGui::Separator();
-                if (ImGui::MenuItem("Quit")) quitApp();
+                if (ImGui::MenuItem("Quit"))
+                {
+                    quitApp();
+                }
                 ImGui::EndMenu(); // File
             }
             if (ImGui::BeginMenu("Help"))
             {
-                if (ImGui::MenuItem("About Hatchet")) runAbout = true;
+                if (ImGui::MenuItem("About GoldSrc Maps"))
+                {
+                    runAbout = true;
+                }
                 ImGui::EndMenu(); // Help
             }
             ImGui::EndMainMenuBar();
@@ -41,7 +47,7 @@ void Program::renderGuiMenu()
 
     if (runAbout)
     {
-        ImGui::OpenPopup("About");
+        ImGui::OpenPopup("GoldSrc Maps");
     }
     renderGuiAbout();
 

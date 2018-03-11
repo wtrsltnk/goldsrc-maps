@@ -31,6 +31,8 @@ int main(int argc, char *argv[])
 
     Program app(window);
 
+    ImGui::CreateContext();
+
     // Setup ImGui binding
     ImGui_ImplGlfwGL3_Init(window, true);
 
@@ -72,6 +74,10 @@ int main(int argc, char *argv[])
         }
         app.CleanUp();
     }
+
+    ImGui_ImplGlfwGL3_Shutdown();
+
+    ImGui::DestroyContext();
 
     glfwTerminate();
 

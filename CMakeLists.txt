@@ -20,8 +20,34 @@ add_executable(goldsrc-maps
     src/program.cpp
     src/program-about.cpp
     src/program-menu.cpp
+    src/program-view.cpp
     src/program.h
     src/noc_file_dialog.cpp
+    src/map/brushops.cpp
+    src/map/brushops.h
+    src/map/mapbrush.cpp
+    src/map/mapbrush.h
+    src/map/mapbrushside.cpp
+    src/map/mapbrushside.h
+    src/map/mapbrushsidematerial.cpp
+    src/map/mapbrushsidematerial.h
+    src/map/mapentity.cpp
+    src/map/mapentity.h
+    src/map/mapkeyvaluepair.cpp
+    src/map/mapkeyvaluepair.h
+    src/map/mapoperations.cpp
+    src/map/mapoperations.h
+    src/map/mapparser.cpp
+    src/map/mapparser.h
+    src/map/maprenderdata.cpp
+    src/map/maprenderdata.h
+    src/map/mapscene.cpp
+    src/map/mapscene.h
+    src/map/worldsize.h
+    src/common/tokenizer.cpp
+    include/tokenizer.h
+    src/common/shader.cpp
+    include/shader.h
     include/stb_image_write.h
     include/noc_file_dialog.h
     resource.rc

@@ -3,10 +3,10 @@
 
 void Program::renderGuiAbout()
 {
-    if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+    if (ImGui::BeginPopupModal("GoldSrc Maps", NULL, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("GoldSrc Textures");
-        ImGui::Text("A texture viewer for Valve's GoldSrc engine.");
+        ImGui::Text("A map viewer for Valve's GoldSrc engine.");
+        ImGui::Separator();
         if (ImGui::Button("OK", ImVec2(120, 0)))
         {
             ImGui::CloseCurrentPopup();
