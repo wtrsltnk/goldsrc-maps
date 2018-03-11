@@ -19,3 +19,6 @@
 [submodule "src/system.io"]
 	path = src/system.io
 	url = https://github.com/wtrsltnk/system.io.git
+[submodule "system.io"]
+	path = system.io
+	url = https://github.com/wtrsltnk/system.io.git
