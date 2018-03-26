@@ -2,6 +2,7 @@
 #include "mapentity.h"
 
 MapScene::MapScene()
+    : _flags(0)
 {
 }
 

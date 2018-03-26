@@ -8,10 +8,11 @@
 
 struct MapVertex
 {
-    MapVertex(const glm::vec3& pos);
+    MapVertex(glm::vec3 const &pos, glm::vec3 const &normal);
 
     glm::vec3 _pos;
     glm::vec2 _uv;
+    glm::vec3 _normal;
 };
 
 class MapFace
@@ -22,6 +23,7 @@ public:
     std::string _texture;
     int _firstVertex;
     int _vertexCount;
+    glm::vec4 _color;
 };
 
 class MapRenderData

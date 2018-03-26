@@ -9,8 +9,8 @@
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
 
-MapVertex::MapVertex(const glm::vec3& pos)
-    : _pos(pos)
+MapVertex::MapVertex(glm::vec3 const &pos, glm::vec3 const &normal)
+    : _pos(pos), _normal(normal)
 { }
 
 MapFace::MapFace(const std::string& texture, int first, int count)
@@ -33,10 +33,7 @@ void MapRenderData::Collect(const MapScene* scene)
 
 void MapRenderData::Collect(const std::vector<MapEntity*>& entities)
 {
-    for (auto entity : entities)
-    {
-        this->Collect(entity);
-    }
+    for (auto entity : entities) this->Collect(entity);
 }
 
 void MapRenderData::UpdateTextureData(MapBrushSide& side, const MapFace& face)
@@ -64,12 +61,12 @@ void MapRenderData::Collect(const MapEntity* entity)
     for (MapBrush* brush : entity->_brushes)
     {
         winding_t** windings = new winding_t*[brush->_sides.size()];
-        for (int i = 0; i < brush->_sides.size(); i++)
+        for (int i = 0; i < int(brush->_sides.size()); i++)
         {
             auto side = brush->_sides[i];
             auto planei = Plane(side._distance, side._normal);
             windings[i] = CreateWindingFromPlane(&planei);
-            for (int j = 0; j < brush->_sides.size(); j++)
+            for (int j = 0; j < int(brush->_sides.size()); j++)
             {
                 if (i != j && windings[i] != 0)
                 {
@@ -80,13 +77,14 @@ void MapRenderData::Collect(const MapEntity* entity)
             if (windings[i] != 0)
             {
                 MapFace face(side._material._texture, this->_verts.size(), windings[i]->numpoints);
+                face._color = brush->_color;
 
                 // Change order of vertices, otherwise it will show 'backsides'
                 for (int k = 0; k < windings[i]->numpoints; k++)
                 {
                     glm::vec3 a = windings[i]->p[k];
 //                    std::cout << glm::to_string(a) << "\n";
-                    this->_verts.push_back(MapVertex(a));
+                    this->_verts.push_back(MapVertex(a, side._normal));
                 }
                 this->UpdateTextureData(side, face);
                 auto found = this->_data.find(side._material._texture);
@@ -99,12 +97,12 @@ void MapRenderData::Collect(const MapEntity* entity)
         }
 
         // To prevent memory leak, cleanup the used windings
-        for (int i = 0; i < brush->_sides.size(); i++)
-        {
-            if (windings[i] != 0)
-            {
-                FreeWinding(windings[i]);
-            }
-        }
+		for (int i = 0; i < int(brush->_sides.size()); i++)
+		{
+			if (windings[i] != 0)
+			{
+				FreeWinding(windings[i]);
+			}
+		}
     }
 }

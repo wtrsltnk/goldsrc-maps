@@ -47,6 +47,8 @@ bool MapParser::LoadScene(MapScene* scene)
         }
     }
 
+    scene->_flags |= SceneFlags::Modified;
+
     return true;
 }
 

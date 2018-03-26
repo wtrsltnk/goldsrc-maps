@@ -1,5 +1,7 @@
 #include "program.h"
-#include "map/mapparser.h"
+#include "fpscamera.h"
+#include "bsp/bspparser.h"
+#include "bsp/bspscene.h"
 
 #include <glad/glad.h>
 #include <imgui.h>
@@ -16,6 +18,7 @@
 #include <iostream>
 #include <sstream>
 #include <streambuf>
+#include <iterator>
 #include <string>
 #include <thread>
 #include <vector>
@@ -43,6 +46,8 @@ Program::Program(GLFWwindow *window)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
     app.search_for[0] = '\0';
+
+    view._camera = new FpsCamera(ViewTypes::PerspectiveFlat);
 
     glfwSetWindowUserPointer(this->_window, static_cast<void *>(this));
 }
@@ -124,10 +129,25 @@ bool Program::SetUp()
     glGenVertexArrays(1, &app.vao);
     glGenBuffers(1, &app.vbo);
 
-    auto parser = MapParser(mapContent);
-    parser.LoadScene(&(doc.scene));
+    std::ifstream file("C:\\Steam\\steamapps\\common\\Half-Life\\cstrike\\maps\\cs_office.bsp", std::ios::in | std::ios::binary | std::ios::ate);
 
-    view.eye = glm::vec3(-700.0f, 0.0f, 0.0f);
+    if (file.is_open())
+    {
+        if (file.tellg() > 0)
+        {
+            int size = file.tellg();
+            auto data = new unsigned char[size];
+            file.seekg(0, std::ios::beg);
+            file.read((char*)data, size);
+
+            BspParser parser(data, size);
+            BspScene scene;
+
+            parser.LoadScene(&scene);
+        }
+        file.close();
+    }
+
     return true;
 }
 
@@ -135,6 +155,8 @@ void Program::onResize(int width, int height)
 {
     app.width = width;
     app.height = height;
+
+    view._camera->SetViewRect(glm::vec4(0.0f, 40.0f, app.width, app.height - 40.0f - 20.0f));
 }
 
 void Program::Render()
@@ -152,11 +174,11 @@ void Program::Render()
     {
         renderGuiMenu();
 
-        renderView(glm::vec4(0.0f, 40.0f, app.width, app.height - 40.0f - 20.0f));
+        renderView(view._camera->ViewRect());
 
         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.20f, 0.20f, 0.47f, 0.60f));
         {
-            ImGui::Begin("statusbar", nullptr, ImGuiWindowFlags_NoResize |ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
+            ImGui::Begin("statusbar", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar);
             {
                 std::lock_guard<std::mutex> lock(_statusbarMutex);
                 ImGui::SetWindowPos(ImVec2(0, app.height - statusbarHeight));

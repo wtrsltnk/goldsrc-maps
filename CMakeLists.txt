@@ -23,6 +23,18 @@ add_executable(goldsrc-maps
     src/program-view.cpp
     src/program.h
     src/noc_file_dialog.cpp
+    src/common/tokenizer.cpp
+    include/tokenizer.h
+    src/common/shader.cpp
+    include/shader.h
+    include/stb_image_write.h
+    include/noc_file_dialog.h
+    resource.rc
+    src/bsp/bspscene.cpp
+    src/bsp/bspscene.h
+    src/bsp/bspparser.cpp
+    src/bsp/bspparser.h
+    src/bsp/bsptypes.h
     src/map/brushops.cpp
     src/map/brushops.h
     src/map/mapbrush.cpp
@@ -44,13 +56,12 @@ add_executable(goldsrc-maps
     src/map/mapscene.cpp
     src/map/mapscene.h
     src/map/worldsize.h
-    src/common/tokenizer.cpp
-    include/tokenizer.h
-    src/common/shader.cpp
-    include/shader.h
-    include/stb_image_write.h
-    include/noc_file_dialog.h
-    resource.rc
+    src/camera.cpp
+    src/camera.h
+    src/fpscamera.cpp
+    src/fpscamera.h
+    src/orthocamera.cpp
+    src/orthocamera.h
     )
 
 target_include_directories(goldsrc-maps

@@ -1,6 +1,8 @@
 #ifndef PROGRAM_H
 #define PROGRAM_H
 
+#include "camera.h"
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -8,9 +10,6 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <system.io.fileinfo.h>
 #include <mutex>
-
-#include "map/mapscene.h"
-#include "map/maprenderdata.h"
 
 struct app_state
 {
@@ -30,20 +29,11 @@ struct app_state
 
 struct doc_state
 {
-    MapScene scene;
-    MapRenderData renderData;
 };
 
 struct view_state
 {
-    glm::vec3 eye = glm::vec3(0.0f);
-
-    // For 3D views
-    float pitch = 0.0f;
-    float yaw = 0.0f;
-
-    // For 2d views
-    float zoom = 1.0f;
+    Camera* _camera;
 };
 
 struct message_modal

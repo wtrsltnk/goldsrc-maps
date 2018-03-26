@@ -3,6 +3,11 @@
 
 #include <vector>
 
+enum SceneFlags
+{
+    Modified = 1 << 1,
+};
+
 class MapScene
 {
 public:
@@ -10,6 +15,7 @@ public:
 
     void Clear();
     std::vector<class MapEntity*> _entities;
+    int _flags;
 };
 
 #endif // MAPSCENE_H

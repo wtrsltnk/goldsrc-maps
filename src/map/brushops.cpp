@@ -236,9 +236,9 @@ winding_t *ClipWinding (winding_t *in, Plane *split)
 
 void VectorMA (const glm::vec3& va, double scale, const glm::vec3& vb, glm::vec3& vc)
 {
-    vc.x = va.x + scale*vb.x;
-    vc.y = va.y + scale*vb.y;
-    vc.z = va.z + scale*vb.z;
+    vc.x = va.x + float(scale) * vb.x;
+    vc.y = va.y + float(scale) * vb.y;
+    vc.z = va.z + float(scale) * vb.z;
 }
 
 //-----------------------------------------------------------------------------
