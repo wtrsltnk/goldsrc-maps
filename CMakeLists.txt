@@ -34,6 +34,8 @@ add_executable(goldsrc-maps
     src/bsp/bspscene.h
     src/bsp/bspparser.cpp
     src/bsp/bspparser.h
+    src/bsp/bsprenderdata.cpp
+    src/bsp/bsprenderdata.h
     src/bsp/bsptypes.h
     src/map/brushops.cpp
     src/map/brushops.h

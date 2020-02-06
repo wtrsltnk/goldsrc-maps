@@ -2,6 +2,8 @@
 #define PROGRAM_H
 
 #include "camera.h"
+#include "bsp/bspscene.h"
+#include "bsp/bsprenderdata.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -29,6 +31,8 @@ struct app_state
 
 struct doc_state
 {
+    BspScene scene;
+    BspRenderData renderData;
 };
 
 struct view_state

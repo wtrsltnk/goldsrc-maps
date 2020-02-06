@@ -1,7 +1,8 @@
 #include "program.h"
 #include <glm/gtc/type_ptr.hpp>
 
-void Program::renderView(glm::vec4 const & viewRect)
+void Program::renderView(
+    glm::vec4 const &viewRect)
 {
     glViewport(viewRect.x, viewRect.y, viewRect.z, viewRect.w);
 
@@ -30,7 +31,10 @@ void Program::renderView(glm::vec4 const & viewRect)
     glBindVertexArray(app.vao);
     glBindBuffer(GL_ARRAY_BUFFER, app.vbo);
 
-//    glDrawArrays(mode, face._firstVertex, face._vertexCount);
+    for (auto face : doc.renderData._data)
+    {
+        glDrawArrays(mode, face.firstVertex, face.vertexCount);
+    }
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);

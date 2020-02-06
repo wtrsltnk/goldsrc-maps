@@ -1,7 +1,7 @@
 #include "program.h"
-#include "fpscamera.h"
 #include "bsp/bspparser.h"
 #include "bsp/bspscene.h"
+#include "fpscamera.h"
 
 #include <glad/glad.h>
 #include <imgui.h>
@@ -16,9 +16,9 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <sstream>
 #include <streambuf>
-#include <iterator>
 #include <string>
 #include <thread>
 #include <vector>
@@ -42,7 +42,7 @@ static std::string mapContent = "{ \
 }";
 
 Program::Program(GLFWwindow *window)
-    : _window(window), _running(true), _statusProgress(-1.0f)
+    : _window(window), _statusProgress(-1.0f), _running(true)
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
     app.search_for[0] = '\0';
@@ -104,6 +104,11 @@ void Program::setStatus(float state, std::string const &message)
     _statusMessage = message;
 }
 
+// Rendering a bsp node with as wireframe bounding box and one face were the
+// plane of the node completly inside the bounding box. The bounding box
+// wireframes in front of the plane is rendered blue, and on the back side
+// red. The face is rendered filled with a slightly transparent green
+
 bool Program::SetUp()
 {
     modal.show = false;
@@ -138,12 +143,12 @@ bool Program::SetUp()
             int size = file.tellg();
             auto data = new unsigned char[size];
             file.seekg(0, std::ios::beg);
-            file.read((char*)data, size);
+            file.read((char *)data, size);
 
             BspParser parser(data, size);
-            BspScene scene;
 
-            parser.LoadScene(&scene);
+            parser.LoadScene(&doc.scene);
+            doc.renderData.Collect(&doc.scene);
         }
         file.close();
     }
@@ -185,7 +190,7 @@ void Program::Render()
                 ImGui::SetWindowSize(ImVec2(app.width, statusbarHeight));
 
                 ImGui::Columns(2);
-                ImGui::Text(_statusMessage.c_str());
+                ImGui::Text("%s", _statusMessage.c_str());
                 ImGui::NextColumn();
                 if (_statusProgress >= 0.0f)
                 {
